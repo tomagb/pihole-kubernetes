@@ -34,7 +34,9 @@ jobs:
       - name: Package the chart
         working-directory: ./charts/pihole
         run: |       
-          helm package .
+          f=$(helm package . | cut -c46-)
+          echo "::set-output name=chartFile::$(f)\n"
+        id: chartPackage
 
       - name: Create Release
         id: create_release
@@ -45,7 +47,7 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           draft: false
-          prerelease: false
+          prerelease: false        
 
       - name: Upload Release Asset
         id: upload-release-asset 
@@ -54,6 +56,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-          asset_path: ./charts/pihole/pihole*.tgz
+          asset_path: .${{steps.chartPackage.outputs.chartFile}}
           asset_name: pihole-chart.tgz
           asset_content_type: application/zip
