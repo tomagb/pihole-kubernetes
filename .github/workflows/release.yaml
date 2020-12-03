@@ -33,7 +33,7 @@ jobs:
       
       - name: Package the chart
         working-directory: ./charts/pihole
-        run: /        
+        run: |       
           helm package .
 
       - name: Create Release
